@@ -645,6 +645,7 @@ auto EasyFullControl::CommandExecution::Implementation::make(
     {
       if (auto context = w_context.lock())
       {
+        // printf( "Update by make %s %.2f %.2f\n", map.c_str(), location[0], location[1] );
         data->update_location(context, map, location);
       }
     };
@@ -670,6 +671,7 @@ auto EasyFullControl::CommandExecution::Implementation::make_hold(
     const std::string& map,
     Eigen::Vector3d location)
     {
+      // printf( "Update by make hold %s %.2f %.2f\n", map.c_str(), location[0], location[1] );
       const auto context = w_context.lock();
       if (!context)
         return;
@@ -2142,6 +2144,11 @@ void EasyFullControl::EasyRobotUpdateHandle::update(
       const auto position = updater->to_rmf_coordinates(
         state.map(), state.position(), *context);
 
+      // printf( "Input %s %.2f %.2f -> rmf %.2f %.2f\n", 
+      //   state.map().c_str(), state.position()[0], state.position()[1],
+      //   position[0], position[1]
+      // );
+
       *updater->reported_location = Location {
         context->now(),
         state.map(),
@@ -2154,10 +2161,21 @@ void EasyFullControl::EasyRobotUpdateHandle::update(
         ActivityIdentifier::Implementation::get(*current_activity).update_fn;
         if (update_fn)
         {
+          // printf( "use update fn -> skip return\n" );
           update_fn(
-            state.map(), position);
+            state.map(), 
+            position
+          );
           return;
         }
+        else
+        {
+          // printf( "Not implement update fn\n" );
+        }
+      }
+      else
+      {
+        // printf( "Not current activity\n" );
       }
 
       if (context->debug_positions)

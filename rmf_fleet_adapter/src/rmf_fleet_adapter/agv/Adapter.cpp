@@ -352,6 +352,12 @@ std::shared_ptr<EasyFullControl> Adapter::add_easy_fleet(
 
   for (const auto& [action, consider] : config.action_consideration())
   {
+    RCLCPP_INFO( 
+      this->node()->get_logger(), 
+      "Fleet [%s] is configured to perform action %s",
+      config.fleet_name().c_str(),
+      action.c_str()
+    );
     fleet_handle->add_performable_action(action, consider);
   }
 

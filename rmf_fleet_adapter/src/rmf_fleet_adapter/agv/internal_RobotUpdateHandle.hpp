@@ -168,27 +168,31 @@ public:
         return;
 
       const auto nav_params = context->nav_params();
-      if (nav_params)
-      {
-        if (const auto p = nav_params->to_rmf_coordinates(map, location))
-        {
-          location = *p;
-        }
-        else
-        {
-          RCLCPP_ERROR(
-            context->node()->get_logger(),
-            "[EasyFullControl] Unable to find a robot transform for map [%s] "
-            "while updating the location of robot [%s] performing an activity. "
-            "We cannot update the robot's location.",
-            map.c_str(),
-            context->requester_id().c_str());
-          return;
-        }
-      }
 
+      // Because position input already in rmf coordinates
+      // if (nav_params)
+      // {
+      //   if (const auto p = nav_params->to_rmf_coordinates(map, location))
+      //   {
+      //     location = *p;
+      //   }
+      //   else
+      //   {
+      //     RCLCPP_ERROR(
+      //       context->node()->get_logger(),
+      //       "[EasyFullControl] Unable to find a robot transform for map [%s] "
+      //       "while updating the location of robot [%s] performing an activity. "
+      //       "We cannot update the robot's location.",
+      //       map.c_str(),
+      //       context->requester_id().c_str());
+      //     return;
+      //   }
+      // }
+
+      // printf( " Location final to %.2f %.2f on map %s\n", location[0], location[1], map.c_str() );
       if (schedule_override.has_value())
       {
+        // printf( "Override update\n" );
         return schedule_override->overridden_update(
           context, map, location);
       }
@@ -239,6 +243,7 @@ public:
       const std::string& map,
       Eigen::Vector3d location)
       {
+        // printf( "Update by action execution %s %.2f %.2f\n", map.c_str(), location[0], location[1] );
         data->update_location(map, location);
       };
 
