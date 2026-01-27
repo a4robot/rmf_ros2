@@ -60,20 +60,21 @@ Auctioneer::Implementation::Implementation(
   const auto dispatch_qos = rclcpp::ServicesQoS().reliable();
 
   bid_notice_pub = rclcpp::create_publisher<BidNoticeMsg>(
-    node_parameters_interface,
     node_topics_interface,
     rmf_task_ros2::BidNoticeTopicName,
-    dispatch_qos);
+    dispatch_qos
+  );
 
   bid_proposal_sub = rclcpp::create_subscription<BidResponseMsg>(
-    node_parameters_interface,
     node_topics_interface,
     rmf_task_ros2::BidResponseTopicName,
     dispatch_qos,
-    [&](const BidResponseMsg::UniquePtr msg)
+    [this](const BidResponseMsg::SharedPtr msg)
     {
       this->receive_response(*msg);
-    });
+    }
+  );
+
 
   timer = rclcpp::create_wall_timer(
     std::chrono::milliseconds(200),

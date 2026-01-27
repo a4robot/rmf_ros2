@@ -610,10 +610,10 @@ public:
       rmf_fleet_msgs::msg::ChargingAssignments>(
       ChargingAssignmentsTopicName,
       reliable_transient_qos,
-      [w = handle->weak_from_this()](const ChargingAssignments& assignments)
+      [w = handle->weak_from_this()](ChargingAssignments::ConstSharedPtr msg)
       {
         if (const auto self = w.lock())
-          self->_pimpl->update_charging_assignments(assignments);
+          self->_pimpl->update_charging_assignments(*msg);
       });
 
     handle->_pimpl->deserialization.event->add(

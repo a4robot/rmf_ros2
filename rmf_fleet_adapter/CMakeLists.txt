@@ -53,8 +53,12 @@ endforeach()
 
 # Backward compatibility for yaml-cpp 0.7 that exports a yaml-cpp target
 # while 0.8.0 and above export yaml-cpp::yaml-cpp
-if (TARGET yaml-cpp)
-  add_library(yaml-cpp::yaml-cpp ALIAS yaml-cpp)
+# Only create alias when yaml-cpp is a normal target (not an IMPORTED one)
+if(TARGET yaml-cpp AND NOT TARGET yaml-cpp::yaml-cpp)
+  get_target_property(_yaml_imported yaml-cpp IMPORTED)
+  if(NOT _yaml_imported)
+    add_library(yaml-cpp::yaml-cpp ALIAS yaml-cpp)
+  endif()
 endif()
 
 # Disable uncrustify tests by default.
@@ -101,7 +105,6 @@ target_link_libraries(rmf_fleet_adapter
     ${rmf_lift_msgs_TARGETS}
     ${rmf_reservation_msgs_TARGETS}
     ${rmf_task_msgs_TARGETS}
-    yaml-cpp::yaml-cpp
   PRIVATE
     rmf_rxcpp
     rmf_websocket::rmf_websocket
@@ -109,6 +112,14 @@ target_link_libraries(rmf_fleet_adapter
     rmf_api_msgs::rmf_api_msgs
     nlohmann_json_schema_validator
 )
+
+if(TARGET yaml-cpp::yaml-cpp)
+  target_link_libraries(rmf_fleet_adapter PRIVATE yaml-cpp::yaml-cpp)
+elseif(TARGET yaml-cpp)
+  target_link_libraries(rmf_fleet_adapter PRIVATE yaml-cpp)
+else()
+  message(FATAL_ERROR "yaml-cpp target not found")
+endif()
 
 target_include_directories(rmf_fleet_adapter
   PUBLIC
@@ -337,7 +348,6 @@ if(DEFINED ENV{RMF_ENABLE_FAILOVER})
   if($ENV{RMF_ENABLE_FAILOVER} EQUAL 1)
     target_link_libraries(robot_state_aggregator_main
       rclcpp::rclcpp
-      rclcpp_components::component
       ${std_msgs_TARGETS}
       ${stubborn_buddies_msgs_TARGETS}
       ${rmf_fleet_msgs_TARGETS}
@@ -345,18 +355,27 @@ if(DEFINED ENV{RMF_ENABLE_FAILOVER})
   else()
     target_link_libraries(robot_state_aggregator_main
       rclcpp::rclcpp
-      rclcpp_components::component
       ${std_msgs_TARGETS}
       ${rmf_fleet_msgs_TARGETS}
     )
   endif()
+  # Foxy/Humble compatibility for rclcpp_components CMake target name
+  if(TARGET rclcpp_components::component)
+    target_link_libraries(robot_state_aggregator_main PUBLIC rclcpp_components::component)
+  elseif(TARGET rclcpp_components::rclcpp_components)
+    target_link_libraries(robot_state_aggregator_main PUBLIC rclcpp_components::rclcpp_components)
+  endif()
 else()
   target_link_libraries(robot_state_aggregator_main
     rclcpp::rclcpp
-    rclcpp_components::component
     ${std_msgs_TARGETS}
     ${rmf_fleet_msgs_TARGETS}
   )
+  if(TARGET rclcpp_components::component)
+    target_link_libraries(robot_state_aggregator_main PUBLIC rclcpp_components::component)
+  elseif(TARGET rclcpp_components::rclcpp_components)
+    target_link_libraries(robot_state_aggregator_main PUBLIC rclcpp_components::rclcpp_components)
+  endif()
 endif()
 
 rclcpp_components_register_nodes(robot_state_aggregator_main
@@ -400,9 +419,14 @@ endif()
 target_link_libraries(robot_state_aggregator
   ${robot_state_aggregator_main_libs}
   rclcpp::rclcpp
-  rclcpp_components::component
   class_loader::class_loader
 )
+
+if(TARGET rclcpp_components::component)
+  target_link_libraries(robot_state_aggregator PUBLIC rclcpp_components::component)
+elseif(TARGET rclcpp_components::rclcpp_components)
+  target_link_libraries(robot_state_aggregator PUBLIC rclcpp_components::rclcpp_components)
+endif()
 
 # -----------------------------------------------------------------------------
 

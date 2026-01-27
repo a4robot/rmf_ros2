@@ -341,25 +341,50 @@ public:
     qos = qos.keep_last(10);
     qos = qos.transient_local();
 
+    using Msg = rmf_reservation_msgs::msg::FlexibleTimeRequest;
+    using Claim = rmf_reservation_msgs::msg::ClaimRequest;
+    using Release = rmf_reservation_msgs::msg::ReleaseRequest;
+    using Graph = rmf_building_map_msgs::msg::Graph;
+
+    rclcpp::SubscriptionOptions options;
+    options.topic_stats_options.state = rclcpp::TopicStatisticsState::Disable;
+
     request_subscription_ =
-      this->create_subscription<rmf_reservation_msgs::msg::FlexibleTimeRequest>(
+      this->create_subscription<Msg>(
         ReservationRequestTopicName, qos,
-        std::bind(&ReservationNode::on_request, this,
-        std::placeholders::_1));
+        [this](Msg::ConstSharedPtr msg)
+        {
+          this->on_request(msg);   // ✅ ส่ง shared_ptr
+        },
+        options);
+
     claim_subscription_ =
-      this->create_subscription<rmf_reservation_msgs::msg::ClaimRequest>(
+      this->create_subscription<Claim>(
         ReservationClaimTopicName, qos,
-        std::bind(&ReservationNode::claim_request, this,
-        std::placeholders::_1));
+        [this](Claim::ConstSharedPtr msg)
+        {
+          this->claim_request(msg); // ✅
+        },
+        options);
+
     release_subscription_ =
-      this->create_subscription<rmf_reservation_msgs::msg::ReleaseRequest>(
+      this->create_subscription<Release>(
         ReservationReleaseTopicName, qos,
-        std::bind(&ReservationNode::release, this, std::placeholders::_1));
+        [this](Release::ConstSharedPtr msg)
+        {
+          this->release(msg);       // ✅
+        },
+        options);
+
     graph_subscription_ =
-      this->create_subscription<rmf_building_map_msgs::msg::Graph>(
+      this->create_subscription<Graph>(
         NavGraphTopicName, qos,
-        std::bind(&ReservationNode::received_graph, this,
-        std::placeholders::_1));
+        [this](Graph::ConstSharedPtr msg)
+        {
+          this->received_graph(msg); // ✅
+        },
+        options);
+
 
     ticket_pub_ = this->create_publisher<rmf_reservation_msgs::msg::Ticket>(
       ReservationResponseTopicName, qos);

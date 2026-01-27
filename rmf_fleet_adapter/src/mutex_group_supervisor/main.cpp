@@ -25,6 +25,7 @@
 #include <rclcpp/executors.hpp>
 
 #include <unordered_map>
+#include <unordered_set>
 #include <queue>
 #include <chrono>
 
@@ -58,9 +59,9 @@ public:
     request_sub = create_subscription<MutexGroupRequest>(
       rmf_fleet_adapter::MutexGroupRequestTopicName,
       qos,
-      [&](const MutexGroupRequest& request)
+      [&](MutexGroupRequest::ConstSharedPtr msg)
       {
-        handle_request(request);
+        handle_request(*msg);
       });
 
     state_pub = create_publisher<MutexGroupStates>(

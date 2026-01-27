@@ -135,7 +135,7 @@ void check_numpy_version_on_import()
 {
   try
   {
-    py::module_ numpy = py::module_::import("numpy");
+    py::module numpy = py::module::import("numpy");
     std::string current_numpy_version_str = py::str(numpy.attr("__version__"));
     std::string built_against_version_str = BUILT_AGAINST_NUMPY_VERSION;
 
