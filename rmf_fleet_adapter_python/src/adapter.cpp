@@ -981,13 +981,30 @@ PYBIND11_MODULE(rmf_adapter, m) {
     });
 
   py::class_<agv::EasyFullControl::RobotState>(m_easy_full_control, "RobotState")
-  .def(py::init<
-      const std::string&,
-      Eigen::Vector3d,
-      double>(),
-    py::arg("map"),
-    py::arg("position"),
-    py::arg("battery_soc"))
+  .def(py::init([](const std::string& map, py::sequence position, double battery_soc) {
+        if (py::len(position) != 3)
+          throw std::runtime_error("position must have 3 elements [x, y, z]");
+
+        const double x = py::float_(position[0]);
+        const double y = py::float_(position[1]);
+        const double z = py::float_(position[2]);
+
+        return agv::EasyFullControl::RobotState(
+          map,
+          Eigen::Vector3d(x, y, z),
+          battery_soc
+        );
+      }),
+      py::arg("map"),
+      py::arg("position"),
+      py::arg("battery_soc"))
+  // .def(py::init<
+  //     const std::string&,
+  //     Eigen::Vector3d,
+  //     double>(),
+  //   py::arg("map"),
+  //   py::arg("position"),
+  //   py::arg("battery_soc"))
   .def_property(
     "map",
     &agv::EasyFullControl::RobotState::map,
@@ -1269,12 +1286,24 @@ PYBIND11_MODULE(rmf_adapter, m) {
 
   // Transformation =============================================================
   py::class_<agv::Transformation>(m, "Transformation")
-  .def(py::init<double,
-    double,
-    Eigen::Vector2d>(),
-    py::arg("rotation"),
-    py::arg("scale"),
-    py::arg("translation"))
+  .def(py::init([](double rotation, double scale, py::sequence t) {
+        if (py::len(t) != 2)
+          throw std::runtime_error("translation must have 2 elements");
+
+        const double tx = py::float_(t[0]);
+        const double ty = py::float_(t[1]);
+
+        return agv::Transformation(rotation, scale, Eigen::Vector2d(tx, ty));
+      }),
+      py::arg("rotation"),
+      py::arg("scale"),
+      py::arg("translation"))
+  // .def(py::init<double,
+  //   double,
+  //   Eigen::Vector2d>(),
+  //   py::arg("rotation"),
+  //   py::arg("scale"),
+  //   py::arg("translation"))
   .def_property_readonly("rotation", &agv::Transformation::rotation)
   .def_property_readonly("scale", &agv::Transformation::scale)
   .def_property_readonly("translation", &agv::Transformation::translation)
