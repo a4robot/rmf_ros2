@@ -347,36 +347,41 @@ target_compile_definitions(robot_state_aggregator_main
 if(DEFINED ENV{RMF_ENABLE_FAILOVER})
   if($ENV{RMF_ENABLE_FAILOVER} EQUAL 1)
     target_link_libraries(robot_state_aggregator_main
-      rclcpp::rclcpp
-      ${std_msgs_TARGETS}
-      ${stubborn_buddies_msgs_TARGETS}
-      ${rmf_fleet_msgs_TARGETS}
+      PRIVATE
+        rclcpp::rclcpp
+        ${std_msgs_TARGETS}
+        ${stubborn_buddies_msgs_TARGETS}
+        ${rmf_fleet_msgs_TARGETS}
     )
   else()
     target_link_libraries(robot_state_aggregator_main
-      rclcpp::rclcpp
-      ${std_msgs_TARGETS}
-      ${rmf_fleet_msgs_TARGETS}
+      PRIVATE
+        rclcpp::rclcpp
+        ${std_msgs_TARGETS}
+        ${rmf_fleet_msgs_TARGETS}
     )
   endif()
-  # Foxy/Humble compatibility for rclcpp_components CMake target name
+
   if(TARGET rclcpp_components::component)
-    target_link_libraries(robot_state_aggregator_main PUBLIC rclcpp_components::component)
+    target_link_libraries(robot_state_aggregator_main PRIVATE rclcpp_components::component)
   elseif(TARGET rclcpp_components::rclcpp_components)
-    target_link_libraries(robot_state_aggregator_main PUBLIC rclcpp_components::rclcpp_components)
+    target_link_libraries(robot_state_aggregator_main PRIVATE rclcpp_components::rclcpp_components)
   endif()
 else()
   target_link_libraries(robot_state_aggregator_main
-    rclcpp::rclcpp
-    ${std_msgs_TARGETS}
-    ${rmf_fleet_msgs_TARGETS}
+    PRIVATE
+      rclcpp::rclcpp
+      ${std_msgs_TARGETS}
+      ${rmf_fleet_msgs_TARGETS}
   )
+
   if(TARGET rclcpp_components::component)
-    target_link_libraries(robot_state_aggregator_main PUBLIC rclcpp_components::component)
+    target_link_libraries(robot_state_aggregator_main PRIVATE rclcpp_components::component)
   elseif(TARGET rclcpp_components::rclcpp_components)
-    target_link_libraries(robot_state_aggregator_main PUBLIC rclcpp_components::rclcpp_components)
+    target_link_libraries(robot_state_aggregator_main PRIVATE rclcpp_components::rclcpp_components)
   endif()
 endif()
+
 
 rclcpp_components_register_nodes(robot_state_aggregator_main
   "RobotStateAggregator"
@@ -416,7 +421,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     "-Wl,--as-needed")
 endif()
 
-target_link_libraries(robot_state_aggregator
+target_link_libraries(robot_state_aggregator PRIVATE
   ${robot_state_aggregator_main_libs}
   rclcpp::rclcpp
   class_loader::class_loader
