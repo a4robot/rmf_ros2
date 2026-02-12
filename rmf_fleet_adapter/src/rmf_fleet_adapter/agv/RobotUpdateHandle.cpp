@@ -968,7 +968,10 @@ void RobotUpdateHandle::Unstable::decommission()
 {
   _pimpl->set_commission(
     _pimpl->commission()
-    .accept_dispatched_tasks(false));
+    .accept_dispatched_tasks(false)
+    .accept_direct_tasks(false) // Add by a4 team
+    .perform_idle_behavior(false)  // Add by a4 team
+  );
 }
 
 //==============================================================================
@@ -976,7 +979,10 @@ void RobotUpdateHandle::Unstable::recommission()
 {
   _pimpl->set_commission(
     _pimpl->commission()
-    .accept_dispatched_tasks(true));
+    .accept_dispatched_tasks(true)
+    .accept_direct_tasks(true) // Add by a4 team
+    .perform_idle_behavior(true)  // Add by a4 team
+  );
 }
 
 //==============================================================================
